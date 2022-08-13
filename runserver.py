@@ -14,7 +14,7 @@ if __name__ == '__main__':
         extra_files.append('./config.yaml')
 
     socketio.jinja_env.cache = {}
-    
+
     socketio.run(
         host='0.0.0.0',
         port=PORT,
