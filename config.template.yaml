@@ -52,7 +52,7 @@ broker_uri: null
 
 # can also be specified as the 'PORT' environment variable
 # defaults to '5000'
-port: 5000
+port: 8000
 
 # can also be specified as the 'MIN_VIEWS' environment variable
 # defaults to '4'
