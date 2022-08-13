@@ -56,9 +56,9 @@ prod_deploy:
     - mkdir ~/.aws/
     - touch ~/.aws/credentials
     - 'printf "[eb-cli]\naws_access_key_id = %s\naws_secret_access_key = %s\n" "$AWS_ACCESS_KEY_ID" "$AWS_SECRET_ACCESS_KEY" >> ~/.aws/credentials'
-    - ls -al ~/.aws
+    - mv config.template.yaml config.yaml
+    - rm .gitignore
     - mv $CI_ENV_FILE_PROD .env
-    - eb init freetail-gavel -p "Python 3.7"
   script:
     - eb list
     - eb use gavel-prod
