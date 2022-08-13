@@ -62,7 +62,7 @@ prod_deploy:
     - if: '$CI_COMMIT_BRANCH == "mainline"'
   environment:
     name: prod
-    url: judging.hacktx.com
+    url: https://judging.hacktx.com
     action: start
   retry: 1
   dependencies:
@@ -90,7 +90,7 @@ prod_stop:
   when: manual
   environment:
     name: prod
-    url: judging.hacktx.com
+    url: https://judging.hacktx.com
     action: stop
   script: eb terminate --force gavel-prod
 
