@@ -62,6 +62,12 @@ def _list(item):
 
 c = Config(CONFIG_FILE)
 
+print("---------------------------------------------")
+print("[DEBUG] Printing all environment variables...")
+for k, v in os.environ.items():
+    print(f"{k}={v}")
+print("---------------------------------------------")
+
 # note: this should be kept in sync with 'config.template.yaml' and
 # 'config.vagrant.yaml'
 BASE_URL = c.get("base_url", "BASE_URL")

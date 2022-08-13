@@ -52,7 +52,7 @@ broker_uri: null
 
 # can also be specified as the 'PORT' environment variable
 # defaults to '5000'
-port: null
+port: 5000
 
 # can also be specified as the 'MIN_VIEWS' environment variable
 # defaults to '4'
@@ -171,7 +171,7 @@ send_stats: null
 # can also be specified as the 'EMAIL_PROVIDER' environment variable
 # defaults to 'smtp'
 #
-# This setting determines the method used to send emails to judges. User currently 
+# This setting determines the method used to send emails to judges. User currently
 # has the choice between smtp, sendgrid, and mailgun
 email_provider: 'smtp'
 
