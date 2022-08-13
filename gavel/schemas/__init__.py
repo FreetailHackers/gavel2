@@ -1,4 +1,3 @@
-
 from gavel.schemas.annotator import AnnotatorSchema
 from gavel.schemas.decision import DecisionSchema
 from gavel.schemas.flag import FlagSchema

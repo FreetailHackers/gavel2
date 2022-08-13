@@ -9,7 +9,7 @@ from gavel.models import db, ma
 class BaseModel(db.Model):
     __abstract__ = True
 
-# Begin to_dict
+    # Begin to_dict
     def to_dict(self, show=None, _hide=[], _path=None):
         """Return a dictionary representation of this model."""
 
@@ -17,7 +17,7 @@ class BaseModel(db.Model):
 
         hidden = self._hidden_fields if hasattr(self, "_hidden_fields") else []
         default = self._default_fields if hasattr(self, "_default_fields") else []
-        default.extend(['id', 'modified_at', 'created_at', self.__tablename__.lower()])
+        default.extend(["id", "modified_at", "created_at", self.__tablename__.lower()])
 
         if not _path:
             _path = self.__tablename__.lower()
@@ -108,7 +108,8 @@ class BaseModel(db.Model):
                 if hasattr(val, "to_dict"):
                     ret_data[key] = val.to_dict(
                         show=list(show),
-                        _hide=list(_hide), _path=("%s.%s" % (_path, key.lower())),
+                        _hide=list(_hide),
+                        _path=("%s.%s" % (_path, key.lower())),
                     )
                 else:
                     try:
@@ -117,4 +118,6 @@ class BaseModel(db.Model):
                         pass
 
         return ret_data
+
+
 # End to_dict

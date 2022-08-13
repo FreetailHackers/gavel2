@@ -15,6 +15,7 @@ from numpy.random import choice, random, shuffle
 from functools import wraps
 from datetime import datetime
 
+
 def requires_open(redirect_to):
     def decorator(f):
         @wraps(f)
@@ -23,8 +24,11 @@ def requires_open(redirect_to):
                 return redirect(url_for(redirect_to))
             else:
                 return f(*args, **kwargs)
+
         return decorated
+
     return decorator
+
 
 def requires_active_annotator(redirect_to):
     def decorator(f):
@@ -35,73 +39,83 @@ def requires_active_annotator(redirect_to):
                 return redirect(url_for(redirect_to))
             else:
                 return f(*args, **kwargs)
+
         return decorated
+
     return decorator
 
 
-@app.route('/')
+@app.route("/")
 def index():
     annotator = get_current_annotator()
     if annotator is None:
         return render_template(
-            'logged_out.html',
-            content=utils.render_markdown(settings.LOGGED_OUT_MESSAGE)
+            "logged_out.html",
+            content=utils.render_markdown(settings.LOGGED_OUT_MESSAGE),
         )
     else:
         if Setting.value_of(SETTING_CLOSED) == SETTING_TRUE:
             return render_template(
-                'closed.html',
-                content=utils.render_markdown(settings.CLOSED_MESSAGE)
+                "closed.html", content=utils.render_markdown(settings.CLOSED_MESSAGE)
             )
         if not annotator.active and not annotator.stop_next:
             return render_template(
-                'disabled.html',
-                content=utils.render_markdown(settings.DISABLED_MESSAGE)
+                "disabled.html",
+                content=utils.render_markdown(settings.DISABLED_MESSAGE),
             )
         if not annotator.active and annotator.stop_next:
             return render_template(
-                'closed.html',
-                content=utils.render_markdown(settings.CLOSING_MESSAGE)
+                "closed.html", content=utils.render_markdown(settings.CLOSING_MESSAGE)
             )
         if not annotator.read_welcome:
-            return redirect(url_for('welcome'))
+            return redirect(url_for("welcome"))
         maybe_init_annotator()
         if annotator.next is None:
             return render_template(
-                'wait.html',
-                content=utils.render_markdown(settings.WAIT_MESSAGE)
+                "wait.html", content=utils.render_markdown(settings.WAIT_MESSAGE)
             )
         elif annotator.prev is None:
-            return render_template('begin.html', item=annotator.next)
+            return render_template("begin.html", item=annotator.next)
         else:
-            return render_template('vote.html', prev=annotator.prev, next=annotator.next)
+            return render_template(
+                "vote.html", prev=annotator.prev, next=annotator.next
+            )
 
-@app.route('/vote', methods=['POST'])
-@requires_open(redirect_to='index')
-@requires_active_annotator(redirect_to='index')
+
+@app.route("/vote", methods=["POST"])
+@requires_open(redirect_to="index")
+@requires_active_annotator(redirect_to="index")
 def vote():
     def tx():
         annotator = get_current_annotator()
-        if annotator.prev.id == int(request.form['prev_id']) and annotator.next.id == int(request.form['next_id']):
-            if request.form['action'] in ['Skip', 'SkipAbsent', 'SkipBusy']:
+        if annotator.prev.id == int(
+            request.form["prev_id"]
+        ) and annotator.next.id == int(request.form["next_id"]):
+            if request.form["action"] in ["Skip", "SkipAbsent", "SkipBusy"]:
                 annotator.ignore.append(annotator.next)
 
-                if request.form['action'] == 'SkipAbsent':
-                    flag = Flag(annotator, annotator.next, 'Absent')
+                if request.form["action"] == "SkipAbsent":
+                    flag = Flag(annotator, annotator.next, "Absent")
                     db.session.add(flag)
             else:
                 # ignore things that were deactivated in the middle of judging
                 if annotator.prev.active and annotator.next.active:
-                    if request.form['action'] == 'Previous':
+                    if request.form["action"] == "Previous":
                         perform_vote(annotator, next_won=False)
-                        decision = Decision(annotator, winner=annotator.prev, loser=annotator.next)
-                    elif request.form['action'] == 'Current':
+                        decision = Decision(
+                            annotator, winner=annotator.prev, loser=annotator.next
+                        )
+                    elif request.form["action"] == "Current":
                         perform_vote(annotator, next_won=True)
-                        decision = Decision(annotator, winner=annotator.next, loser=annotator.prev)
+                        decision = Decision(
+                            annotator, winner=annotator.next, loser=annotator.prev
+                        )
                     else:
                         return
                     db.session.add(decision)
-                annotator.next.viewed.append(annotator) # counted as viewed even if deactivated
+                annotator.next.viewed.append(
+                    annotator
+                )  # counted as viewed even if deactivated
                 annotator.prev = annotator.next
                 annotator.ignore.append(annotator.prev)
             if annotator.stop_next:
@@ -109,19 +123,21 @@ def vote():
                 annotator.stop_next = False
             annotator.update_next(choose_next(annotator))
             db.session.commit()
-    with_retries(tx)
-    return redirect(url_for('index'))
 
-@app.route('/report', methods=['POST'])
-@requires_open(redirect_to='index')
-@requires_active_annotator(redirect_to='index')
+    with_retries(tx)
+    return redirect(url_for("index"))
+
+
+@app.route("/report", methods=["POST"])
+@requires_open(redirect_to="index")
+@requires_active_annotator(redirect_to="index")
 def report():
     def tx():
         annotator = get_current_annotator()
-        reason = request.form['reason']
-        if reason in ['Unknown', '']:
+        reason = request.form["reason"]
+        if reason in ["Unknown", ""]:
             return
-        if annotator.next.id == int(request.form['next_id']):
+        if annotator.next.id == int(request.form["next_id"]):
             flag = Flag(annotator, annotator.next, reason)
             db.session.add(flag)
             annotator.ignore.append(annotator.next)
@@ -130,39 +146,44 @@ def report():
             else:
                 annotator.next = None
             db.session.commit()
-    with_retries(tx)
-    return redirect(url_for('index'))
 
-@app.route('/begin', methods=['POST'])
-@requires_open(redirect_to='index')
-@requires_active_annotator(redirect_to='index')
+    with_retries(tx)
+    return redirect(url_for("index"))
+
+
+@app.route("/begin", methods=["POST"])
+@requires_open(redirect_to="index")
+@requires_active_annotator(redirect_to="index")
 def begin():
     def tx():
         annotator = get_current_annotator()
-        if annotator.next.id == int(request.form['item_id']):
+        if annotator.next.id == int(request.form["item_id"]):
             annotator.ignore.append(annotator.next)
-            if request.form['action'] == 'Done':
+            if request.form["action"] == "Done":
                 annotator.next.viewed.append(annotator)
                 annotator.prev = annotator.next
                 annotator.update_next(choose_next(annotator))
-            elif request.form['action'] in ['Skip', 'SkipAbsent', 'SkipBusy']:
-                if request.form['action'] == 'SkipAbsent':
-                    flag = Flag(annotator, annotator.next, 'Absent')
+            elif request.form["action"] in ["Skip", "SkipAbsent", "SkipBusy"]:
+                if request.form["action"] == "SkipAbsent":
+                    flag = Flag(annotator, annotator.next, "Absent")
                     db.session.add(flag)
-                annotator.next = None # will be reset in index
+                annotator.next = None  # will be reset in index
             if annotator.stop_next:
                 annotator.active = False
                 annotator.stop_next = False
             db.session.commit()
-    with_retries(tx)
-    return redirect(url_for('index'))
 
-@app.route('/logout')
+    with_retries(tx)
+    return redirect(url_for("index"))
+
+
+@app.route("/logout")
 def logout():
     session.pop(ANNOTATOR_ID, None)
-    return redirect(url_for('index'))
+    return redirect(url_for("index"))
 
-@app.route('/login/<secret>/')
+
+@app.route("/login/<secret>/")
 def login(secret):
     annotator = Annotator.by_secret(secret)
     if annotator is None:
@@ -170,46 +191,48 @@ def login(secret):
         session.modified = True
     else:
         session[ANNOTATOR_ID] = annotator.id
-    return redirect(url_for('index'))
+    return redirect(url_for("index"))
 
-@app.route('/welcome/')
-@requires_open(redirect_to='index')
-@requires_active_annotator(redirect_to='index')
+
+@app.route("/welcome/")
+@requires_open(redirect_to="index")
+@requires_active_annotator(redirect_to="index")
 def welcome():
-    return render_template(
-        'welcome.html'
-    )
+    return render_template("welcome.html")
 
-@app.route('/welcome/done', methods=['POST'])
-@requires_open(redirect_to='index')
-@requires_active_annotator(redirect_to='index')
+
+@app.route("/welcome/done", methods=["POST"])
+@requires_open(redirect_to="index")
+@requires_active_annotator(redirect_to="index")
 def welcome_done():
     def tx():
         annotator = get_current_annotator()
-        if request.form['action'] == 'Done':
+        if request.form["action"] == "Done":
             annotator.read_welcome = True
         db.session.commit()
-    with_retries(tx)
-    return redirect(url_for('index'))
 
-@app.route('/welcome/instructions/')
-@requires_open(redirect_to='index')
-@requires_active_annotator(redirect_to='index')
+    with_retries(tx)
+    return redirect(url_for("index"))
+
+
+@app.route("/welcome/instructions/")
+@requires_open(redirect_to="index")
+@requires_active_annotator(redirect_to="index")
 def welcome_instructions():
-    return render_template(
-        'instructions.html'
-    )
+    return render_template("instructions.html")
+
 
 def get_current_annotator():
     return Annotator.by_id(session.get(ANNOTATOR_ID, None))
 
+
 def preferred_items(annotator):
-    '''
+    """
     Return a list of preferred items for the given annotator to look at next.
 
     This method uses a variety of strategies to try to select good candidate
     projects.
-    '''
+    """
     items = []
     ignored_ids = {i.id for i in annotator.ignore}
 
@@ -225,16 +248,22 @@ def preferred_items(annotator):
     items = prioritized_items if prioritized_items else available_items
 
     annotators = Annotator.query.filter(
-        (Annotator.active == True) & (Annotator.next != None) & (Annotator.updated != None)
+        (Annotator.active == True)
+        & (Annotator.next != None)
+        & (Annotator.updated != None)
     ).all()
-    busy = {i.next.id for i in annotators if \
-        (datetime.utcnow() - i.updated).total_seconds() < settings.TIMEOUT * 60}
+    busy = {
+        i.next.id
+        for i in annotators
+        if (datetime.utcnow() - i.updated).total_seconds() < settings.TIMEOUT * 60
+    }
     nonbusy = [i for i in items if i.id not in busy]
     preferred = nonbusy if nonbusy else items
 
     less_seen = [i for i in preferred if len(i.viewed) < settings.MIN_VIEWS]
 
     return less_seen if less_seen else preferred
+
 
 def maybe_init_annotator():
     def tx():
@@ -244,25 +273,32 @@ def maybe_init_annotator():
             if items:
                 annotator.update_next(choice(items))
                 db.session.commit()
+
     with_retries(tx)
+
 
 def choose_next(annotator):
     items = preferred_items(annotator)
 
-    shuffle(items) # useful for argmax case as well in the case of ties
+    shuffle(items)  # useful for argmax case as well in the case of ties
     if items:
         if random() < crowd_bt.EPSILON:
             return items[0]
         else:
-            return crowd_bt.argmax(lambda i: crowd_bt.expected_information_gain(
-                annotator.alpha,
-                annotator.beta,
-                annotator.prev.mu,
-                annotator.prev.sigma_sq,
-                i.mu,
-                i.sigma_sq), items)
+            return crowd_bt.argmax(
+                lambda i: crowd_bt.expected_information_gain(
+                    annotator.alpha,
+                    annotator.beta,
+                    annotator.prev.mu,
+                    annotator.prev.sigma_sq,
+                    i.mu,
+                    i.sigma_sq,
+                ),
+                items,
+            )
     else:
         return None
+
 
 def perform_vote(annotator, next_won):
     if next_won:
@@ -271,13 +307,20 @@ def perform_vote(annotator, next_won):
     else:
         winner = annotator.prev
         loser = annotator.next
-    u_alpha, u_beta, u_winner_mu, u_winner_sigma_sq, u_loser_mu, u_loser_sigma_sq = crowd_bt.update(
+    (
+        u_alpha,
+        u_beta,
+        u_winner_mu,
+        u_winner_sigma_sq,
+        u_loser_mu,
+        u_loser_sigma_sq,
+    ) = crowd_bt.update(
         annotator.alpha,
         annotator.beta,
         winner.mu,
         winner.sigma_sq,
         loser.mu,
-        loser.sigma_sq
+        loser.sigma_sq,
     )
     annotator.alpha = u_alpha
     annotator.beta = u_beta

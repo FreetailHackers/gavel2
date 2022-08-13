@@ -7,10 +7,11 @@ import gavel.settings as settings
 
 from gavel.models._basemodel import BaseModel
 
-view_table = db.Table('view',
-                      db.Column('item_id', db.Integer, db.ForeignKey('item.id')),
-                      db.Column('annotator_id', db.Integer, db.ForeignKey('annotator.id'))
-                      )
+view_table = db.Table(
+    "view",
+    db.Column("item_id", db.Integer, db.ForeignKey("item.id")),
+    db.Column("annotator_id", db.Integer, db.ForeignKey("annotator.id")),
+)
 
 
 class Item(BaseModel):
@@ -29,9 +30,9 @@ class Item(BaseModel):
     submission_website = db.Column(db.Text, nullable=True)
 
     active = db.Column(db.Boolean, default=True, nullable=False)
-    viewed = db.relationship('Annotator', secondary=view_table)
+    viewed = db.relationship("Annotator", secondary=view_table)
     prioritized = db.Column(db.Boolean, default=False, nullable=False)
-    flags = db.relationship('Flag', back_populates="item")
+    flags = db.relationship("Flag", back_populates="item")
     updated = db.Column(db.DateTime, onupdate=datetime.utcnow)
 
     mu = db.Column(db.Float)
@@ -50,12 +51,21 @@ class Item(BaseModel):
         "prioritized",
         "mu",
         "sigma_sq",
-        "updated"
+        "updated",
     ]
 
     relations_keys = ("viewed", "flags")
 
-    def __init__(self, name, location, description, tagline="N/A", video_reference="N/A", submission_reference="N/A", submission_website="N/A"):
+    def __init__(
+        self,
+        name,
+        location,
+        description,
+        tagline="N/A",
+        video_reference="N/A",
+        submission_reference="N/A",
+        submission_website="N/A",
+    ):
         self.name = name
         self.location = location
         self.description = description
@@ -71,19 +81,19 @@ class Item(BaseModel):
     #     if settings.VIRTUAL_EVENT:
     #         assert tagline
     #     return tagline
-    
+
     # @validates('video_reference')
     # def require_video_reference_on_virtual(self, key, video_reference):
     #     if settings.VIRTUAL_EVENT:
     #         assert video_reference
     #     return video_reference
-    
+
     # @validates('submission_reference')
     # def require_submission_reference_on_virtual(self, key, submission_reference):
     #     if settings.VIRTUAL_EVENT:
     #         assert submission_reference
     #     return submission_reference
-    
+
     # @validates('submission_website')
     # def require_submission_website_on_virtual(self, key, submission_website):
     #     if settings.VIRTUAL_EVENT:

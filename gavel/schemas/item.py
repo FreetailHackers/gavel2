@@ -6,4 +6,3 @@ from gavel.models import Item
 class ItemSchema(ma.ModelSchema):
     class Meta:
         model = Item
-
