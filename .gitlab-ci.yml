@@ -59,6 +59,7 @@ prod_deploy:
     - mv config.template.yaml config.yaml
     - rm .gitignore
     - mv $CI_ENV_FILE_PROD .env
+    - ls -al
   script:
     - eb list
     - eb use gavel-prod
