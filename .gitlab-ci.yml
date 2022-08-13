@@ -59,6 +59,8 @@ prod_deploy:
     - mv config.template.yaml config.yaml
     - rm .gitignore
     - mv $CI_ENV_FILE_PROD .env
+    - git add .
+    - git status
     - ls -al
   script:
     - eb list
@@ -66,7 +68,6 @@ prod_deploy:
     - eb health
     - eb status --verbose
     - eb deploy --staged
-
 
 prod_stop:
   extends: prod_deploy
