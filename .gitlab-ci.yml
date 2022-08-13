@@ -65,7 +65,7 @@ prod_deploy:
     - eb use gavel-prod
     - eb health
     - eb status --verbose
-    - eb deploy
+    - eb deploy --staged
 
 
 prod_stop:
