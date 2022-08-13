@@ -69,9 +69,7 @@ prod_deploy:
 
 prod_stop:
   extends: prod_deploy
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "mainline"'
-      when: manual
+  when: manual
   environment:
     name: prod
     url: judging.hacktx.com
@@ -83,4 +81,6 @@ prod_create:
   rules:
     - if: '$CI_COMMIT_BRANCH == "mainline"'
       when: manual
+      allow_failure: true
+    - when: never
   script: eb create gavel-prod -d -c freetail-gavel -r us-east-1 -it t2.micro,t3.micro -im 1 -ix 2 -db.engine postgres -db.i db.t3.micro -db.size 5 -db.user postgres -db.pass $DB_PASSWORD_PROD -db.version 14.2
