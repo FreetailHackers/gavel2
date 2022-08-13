@@ -7,10 +7,11 @@ from datetime import datetime
 
 from gavel.models._basemodel import BaseModel
 
-ignore_table = db.Table('ignore',
-                        db.Column('annotator_id', db.Integer, db.ForeignKey('annotator.id')),
-                        db.Column('item_id', db.Integer, db.ForeignKey('item.id'))
-                        )
+ignore_table = db.Table(
+    "ignore",
+    db.Column("annotator_id", db.Integer, db.ForeignKey("annotator.id")),
+    db.Column("item_id", db.Integer, db.ForeignKey("item.id")),
+)
 
 
 class Annotator(BaseModel):
@@ -22,26 +23,28 @@ class Annotator(BaseModel):
     read_welcome = db.Column(db.Boolean, default=False, nullable=False)
     description = db.Column(db.Text, nullable=False)
     secret = db.Column(db.String(32), unique=True, nullable=False)
-    next_id = db.Column(db.Integer, db.ForeignKey('item.id'))
-    next = db.relationship('Item', foreign_keys=[next_id], uselist=False)
+    next_id = db.Column(db.Integer, db.ForeignKey("item.id"))
+    next = db.relationship("Item", foreign_keys=[next_id], uselist=False)
     updated = db.Column(db.DateTime, onupdate=datetime.utcnow)
-    prev_id = db.Column(db.Integer, db.ForeignKey('item.id'))
-    prev = db.relationship('Item', foreign_keys=[prev_id], uselist=False)
-    ignore = db.relationship('Item', secondary=ignore_table)
+    prev_id = db.Column(db.Integer, db.ForeignKey("item.id"))
+    prev = db.relationship("Item", foreign_keys=[prev_id], uselist=False)
+    ignore = db.relationship("Item", secondary=ignore_table)
 
     alpha = db.Column(db.Float)
     beta = db.Column(db.Float)
 
-    _default_fields = ["name",
-                       "email",
-                       "active",
-                       "stop_next",
-                       "read_welcome",
-                       "description",
-                       "next_id",
-                       "prev_id",
-                       "ignore",
-                       "updated"]
+    _default_fields = [
+        "name",
+        "email",
+        "active",
+        "stop_next",
+        "read_welcome",
+        "description",
+        "next_id",
+        "prev_id",
+        "ignore",
+        "updated",
+    ]
     _secret_fields = ["secret"]
 
     relations_keys = ("next", "prev", "ignore")
@@ -56,7 +59,9 @@ class Annotator(BaseModel):
 
     def update_next(self, new_next):
         if new_next is not None:
-            new_next.prioritized = False  # it's now assigned, so cancel the prioritization
+            new_next.prioritized = (
+                False  # it's now assigned, so cancel the prioritization
+            )
             # it could happen that the judge skips the project, but that
             # doesn't re-prioritize the project
             self.updated = datetime.utcnow()

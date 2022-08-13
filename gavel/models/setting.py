@@ -3,11 +3,12 @@ from sqlalchemy.orm.exc import NoResultFound
 
 from gavel.models._basemodel import BaseModel
 
+
 class Setting(BaseModel):
     key = db.Column(db.Text, unique=True, nullable=False, primary_key=True)
     value = db.Column(db.Text, nullable=False)
 
-    _default_fields = ["key","value"]
+    _default_fields = ["key", "value"]
 
     def __init__(self, key, value):
         self.key = key
