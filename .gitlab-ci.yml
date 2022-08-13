@@ -23,9 +23,6 @@ workflow:
       when: never
     - if: "$CI_COMMIT_BRANCH"
 
-variables:
-  EB_IMAGE_TAG: $CI_REGISTRY_IMAGE/elasticbeanstalk:latest
-
 stages:
   - build
   - staging
@@ -45,26 +42,9 @@ lint:
   script: pylint gavel
   allow_failure: true
 
-build_eb_image:
-  stage: build
-  image: docker:20.10.10
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "mainline"'
-      changes:
-        - eb.Dockerfile
-        - .dockerignore
-  services:
-    - docker:20.10.10-dind
-  tags:
-    - gitlab-org-docker
-  script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build -t $EB_IMAGE_TAG - < eb.Dockerfile
-    - docker push $EB_IMAGE_TAG
-
 prod_deploy:
   stage: production
-  image: $EB_IMAGE_TAG
+  image: $EB_IMAGE
   rules:
     - if: '$CI_COMMIT_BRANCH == "mainline"'
   environment:
