@@ -59,7 +59,12 @@ prod_deploy:
     - ls -al ~/.aws
     - mv $CI_ENV_FILE_PROD .env
     - eb init freetail-gavel -p "Python 3.7"
-  script: eb deploy gavel-prod
+  script:
+    - eb list
+    - eb use gavel-prod
+    - eb health
+    - eb status --verbose
+    - eb deploy
 
 
 prod_stop:
@@ -71,7 +76,6 @@ prod_stop:
     name: prod
     url: judging.hacktx.com
     action: stop
-  retry: 1
   script: eb terminate --force gavel-prod
 
 prod_create:
