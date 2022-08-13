@@ -29,6 +29,19 @@ stages:
   - test
   - production
 
+build_scss:
+  stage: build
+  image: node
+  before_script:
+    - yarn install
+    - npx browserslist@latest --update-db
+  script: yarn build
+  artifacts:
+    name: "generated-scss"
+    paths:
+      - gavel/static/generated.scss
+    expire_in: 1 week
+
 format:
   stage: build
   image: python:3.7.10-slim
@@ -52,12 +65,15 @@ prod_deploy:
     url: judging.hacktx.com
     action: start
   retry: 1
+  dependencies:
+    - build_scss
   before_script:
     - mkdir ~/.aws/
     - touch ~/.aws/credentials
     - 'printf "[eb-cli]\naws_access_key_id = %s\naws_secret_access_key = %s\n" "$AWS_ACCESS_KEY_ID" "$AWS_SECRET_ACCESS_KEY" >> ~/.aws/credentials'
     - mv config.template.yaml config.yaml
     - rm .gitignore
+    - rm gavel/static/.gitignore
     - mv $CI_ENV_FILE_PROD .env
     - git add .
     - git status
