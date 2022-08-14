@@ -141,7 +141,7 @@ def admin_items():
         for i in a.ignore:
             if a.id not in viewed[i.id]:
                 skipped_holder.append(a.id)
-        skipped[i.id] = skipped_holder
+            skipped[i.id] = skipped_holder
 
     item_count = len(items)
 
