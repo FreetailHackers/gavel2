@@ -1,2 +1,2 @@
-worker: PYTHONUNBUFFERED=true celery -A gavel:celery worker -E -P eventlet --loglevel=info
-web: python initialize.py && gunicorn -k eventlet -b 0.0.0.0:8000 gavel:app --workers=3
+worker: PYTHONUNBUFFERED=true python -m celery -A gavel:celery worker
+web: python initialize.py && PORT=8000 gunicorn -k eventlet -b 0.0.0.0:8000 gavel:app --workers=3

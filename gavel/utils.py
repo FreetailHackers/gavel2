@@ -89,13 +89,16 @@ def get_paragraphs(message):
 
 @celery.task(name="utils.send_emails")
 def send_emails(emails):
+    print("Starting send emails")
     if settings.EMAIL_PROVIDER not in ["smtp", "sendgrid", "mailgun"]:
         raise Exception(
             "[EMAIL ERROR]: Invalid email provider. Please select one of: smtp, sendgrid, mailgun"
         )
     if settings.EMAIL_PROVIDER == "smtp":
+        print("Sending smtp emails")
         send_smtp_emails.apply_async(args=[emails])
     else:
+        print("y no smtp?")
         exceptions = []
         for e in emails:
             to_address, subject, body = e
@@ -135,13 +138,16 @@ def send_smtp_emails(emails):
     This function takes a list [(to_address, subject, body)].
     """
 
+    print("Sending smtp emails from", settings.EMAIL_FROM, "...")
     if settings.EMAIL_AUTH_MODE == "tls":
         server = smtplib.SMTP(settings.EMAIL_HOST, settings.EMAIL_PORT)
+        print("Using host", settings.EMAIL_HOST, "on port", settings.EMAIL_PORT)
         server.ehlo()
         server.starttls()
         server.ehlo()
 
     elif settings.EMAIL_AUTH_MODE == "ssl":
+        print("Why are we on SSL?")
         server = smtplib.SMTP_SSL(settings.EMAIL_HOST, settings.EMAIL_PORT)
     else:
         raise ValueError("unsupported auth mode: %s" % settings.EMAIL_AUTH_MODE)
@@ -150,6 +156,7 @@ def send_smtp_emails(emails):
 
     exceptions = []
     for e in emails:
+        print("  Attempting to send email:", e)
         try:
             to_address, subject, body = e
             msg = email.mime.multipart.MIMEMultipart()
@@ -161,9 +168,13 @@ def send_smtp_emails(emails):
                 recipients.extend(settings.EMAIL_CC)
             msg["Subject"] = subject
             msg.attach(email.mime.text.MIMEText(body, "plain"))
-            server.sendmail(settings.EMAIL_FROM, recipients, msg.as_string())
+            print(
+                "  Sent; results:",
+                server.sendmail(settings.EMAIL_FROM, recipients, msg.as_string()),
+            )
         except Exception as e:
             exceptions.append(e)  # XXX is there a cleaner way to handle this?
+            print("  Error:", e)
 
     server.quit()
     if exceptions:
@@ -171,6 +182,7 @@ def send_smtp_emails(emails):
 
 
 async def sendgrid_send_email(to_address, subject, body):
+    print("EWWW SENDGRID")
     new_dict = {}
     new_dict["personalizations"] = []
     new_dict["personalizations"].append(
@@ -190,6 +202,7 @@ async def sendgrid_send_email(to_address, subject, body):
 
 
 async def mailgun_send_email(to_address, subject, body):
+    print("EWWW MAILGUN")
     api_url = "https://api.mailgun.net/v3/" + settings.MAILGUN_DOMAIN + "/messages"
     mailgun_key = settings.MAILGUN_API_KEY
     response = requests.post(
