@@ -42,18 +42,13 @@ build_scss:
       - gavel/static/generated.scss
     expire_in: 1 week
 
-format:
+build_python:
   stage: build
   image: python:3.7.10-slim
-  before_script: pip install black
-  script: black --check gavel
-
-lint:
-  stage: build
-  image: python:3.7.10-slim
-  before_script: pip install pylint
-  script: pylint gavel
-  allow_failure: true
+  script:
+    - pip install -r requirements.txt
+    - black --check gavel
+    - pylint --exit-zero gavel # TODO disable exit-zero flag eventually
 
 prod_deploy:
   stage: production
