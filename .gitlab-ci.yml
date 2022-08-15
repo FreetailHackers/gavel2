@@ -84,16 +84,16 @@ prod_deploy:
     - eb status --verbose
     - eb deploy --staged
 
-set_standard_url:
+.standardurl:
   rules:
     - if: '$CI_COMMIT_BRANCH == "mainline" && $GAVEL_ENV != "freetail-gavel"'
   variables:
     GAVEL_URL: $GAVEL_ENV.us-east-1.elasticbeanstalk.com
 
-prod_deploy_nonstandard:
+prod_deploy_custom:
   extends:
     - prod_deploy
-    - set_standard_url
+    - .standardurl
 
 prod_stop:
   extends: prod_deploy
@@ -102,17 +102,17 @@ prod_stop:
     action: stop
   script: eb terminate --force $GAVEL_ENV
 
-prod_stop_nonstandard:
+prod_stop_custom:
   extends:
     - prod_stop
-    - set_standard_url
+    - .standardurl
 
 prod_create:
   extends: prod_deploy
   when: manual
   script: eb create $GAVEL_ENV -d -c $GAVEL_ENV -r us-east-1 -it t2.micro,t3.micro --elb-type application -im 1 -ix 2 -db.engine postgres -db.i db.t3.micro -db.size 5 -db.user postgres -db.pass $DB_PASSWORD_PROD -db.version 14.2
 
-prod_create_nonstandard:
+prod_create_custom:
   extends:
     - prod_create
-    - set_standard_url
+    - .standardurl
