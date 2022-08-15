@@ -83,6 +83,7 @@ prod_deploy:
     - eb health
     - eb status --verbose
     - eb deploy --staged
+  needs: ["prod_create"]
 
 .standardurl:
   rules:
@@ -94,6 +95,7 @@ prod_deploy_custom:
   extends:
     - prod_deploy
     - .standardurl
+  needs: ["prod_create_custom"]
 
 prod_stop:
   extends: prod_deploy
@@ -101,18 +103,25 @@ prod_stop:
   environment:
     action: stop
   script: eb terminate --force $GAVEL_ENV
+  needs: []
 
 prod_stop_custom:
   extends:
     - prod_stop
     - .standardurl
+  needs: []
 
 prod_create:
   extends: prod_deploy
-  when: manual
-  script: eb create $GAVEL_ENV -d -c $GAVEL_ENV -r us-east-1 -it t2.micro,t3.micro --elb-type application -im 1 -ix 2 -db.engine postgres -db.i db.t3.micro -db.size 5 -db.user postgres -db.pass $DB_PASSWORD_PROD -db.version 14.2
+  script:
+    - eb create $GAVEL_ENV -d -c $GAVEL_ENV -r us-east-1 -it t2.micro,t3.micro --elb-type application -im 1 -ix 2 -db.engine postgres -db.i db.t3.micro -db.size 5 -db.user postgres -db.pass $DB_PASSWORD_PROD -db.version 14.2 || exit_code=$?
+    - if [ $exit_code -ne 0 ]; then echo "Elastic Beanstalk Creation failed"; fi;
+  needs: []
+  allow_failure: true
 
 prod_create_custom:
   extends:
     - prod_create
     - .standardurl
+  needs: []
+  allow_failure: true
