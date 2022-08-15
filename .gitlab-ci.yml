@@ -56,6 +56,7 @@ prod_deploy:
   variables:
     GAVEL_URL: https://judging.hacktx.com/
     GAVEL_ENV: freetail-gavel
+    HTTPS_CONFIG_FILE: ""
   rules:
     - if: '$CI_COMMIT_BRANCH == "mainline" && $GAVEL_ENV == "freetail-gavel"'
   environment:
@@ -72,6 +73,7 @@ prod_deploy:
     - mv config.template.yaml config.yaml
     - rm .gitignore
     - rm gavel/static/.gitignore
+    - rm -f $HTTPS_CONFIG_FILE
     - mv $CI_ENV_FILE_PROD .env
     - echo -e "\nBASE_URL=$GAVEL_URL" >> .env
     - git add .
@@ -89,6 +91,7 @@ prod_deploy:
     - if: '$CI_COMMIT_BRANCH == "mainline" && $GAVEL_ENV != "freetail-gavel"'
   variables:
     GAVEL_URL: https://$GAVEL_ENV.us-east-1.elasticbeanstalk.com/
+    HTTPS_CONFIG_FILE: .ebextensions/securelistener-alb.config
 
 prod_deploy_custom:
   extends:
