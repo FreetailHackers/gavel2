@@ -17,7 +17,7 @@ base_url: 'https://judging.hacktx.com/'
 #
 # if you are setting DISABLE_EMAIL, you can set this setting to '_unused_' (or
 # anything else).
-email_from: 'Freetail Hackers <hello@freetailhackers.com>'
+email_from: null
 
 # can also be specified as the 'EMAIL_USER' environment variable
 #
@@ -132,7 +132,7 @@ email_host: 'email-smtp.us-east-1.amazonaws.com'
 
 # can also be specified as the 'EMAIL_PORT' environment variable
 # defaults to '587'
-email_port: 465
+email_port: 587
 
 # can also be specified as the 'EMAIL_CC' environment variable
 # defaults to '[]'
