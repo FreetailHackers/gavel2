@@ -53,11 +53,14 @@ build_python:
 prod_deploy:
   stage: production
   image: $EB_IMAGE
+  variables:
+    GAVEL_URL: https://judging.hacktx.com
+    GAVEL_ENV: freetail-gavel
   rules:
-    - if: '$CI_COMMIT_BRANCH == "mainline"'
+    - if: '$CI_COMMIT_BRANCH == "mainline" && $GAVEL_ENV == "freetail-gavel"'
   environment:
-    name: prod
-    url: https://judging.hacktx.com
+    name: $GAVEL_ENV
+    url: $GAVEL_URL
     action: start
   retry: 1
   dependencies:
@@ -70,30 +73,46 @@ prod_deploy:
     - rm .gitignore
     - rm gavel/static/.gitignore
     - mv $CI_ENV_FILE_PROD .env
+    - echo "BASE_URL=$GAVEL_URL" >> .env
     - git add .
     - git status
     - ls -al
   script:
     - eb list
-    - eb use gavel-prod
+    - eb use $GAVEL_ENV
     - eb health
     - eb status --verbose
     - eb deploy --staged
+
+set_standard_url:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "mainline" && $GAVEL_ENV != "freetail-gavel"'
+  variables:
+    GAVEL_URL: $GAVEL_ENV.us-east-1.elasticbeanstalk.com
+
+prod_deploy_nonstandard:
+  extends:
+    - prod_deploy
+    - set_standard_url
 
 prod_stop:
   extends: prod_deploy
   when: manual
   environment:
-    name: prod
-    url: https://judging.hacktx.com
     action: stop
-  script: eb terminate --force gavel-prod
+  script: eb terminate --force $GAVEL_ENV
+
+prod_stop_nonstandard:
+  extends:
+    - prod_stop
+    - set_standard_url
 
 prod_create:
   extends: prod_deploy
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "mainline"'
-      when: manual
-      allow_failure: true
-    - when: never
-  script: eb create gavel-prod -d -c freetail-gavel -r us-east-1 -it t2.micro,t3.micro --elb-type application -im 1 -ix 2 -db.engine postgres -db.i db.t3.micro -db.size 5 -db.user postgres -db.pass $DB_PASSWORD_PROD -db.version 14.2
+  when: manual
+  script: eb create $GAVEL_ENV -d -c $GAVEL_ENV -r us-east-1 -it t2.micro,t3.micro --elb-type application -im 1 -ix 2 -db.engine postgres -db.i db.t3.micro -db.size 5 -db.user postgres -db.pass $DB_PASSWORD_PROD -db.version 14.2
+
+prod_create_nonstandard:
+  extends:
+    - prod_create
+    - set_standard_url

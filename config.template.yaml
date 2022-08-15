@@ -11,7 +11,7 @@ admin_password: null
 # make sure to have a trailing slash. this must be set for emailed links to
 # work properly. if you are setting DISABLE_EMAIL, you can set this setting to
 # '_unused_' (or anything else).
-base_url: 'https://judging.hacktx.com/'
+base_url: null
 
 # can also be specified as the 'EMAIL_FROM' environment variable
 #
@@ -197,4 +197,4 @@ mailgun_api_key: null
 # defaults to False
 #
 # This setting should be set to True if the event in question is a virtual event
-virtual_event: True
+virtual_event: False
