@@ -54,7 +54,7 @@ prod_deploy:
   stage: production
   image: $EB_IMAGE
   variables:
-    GAVEL_URL: https://judging.hacktx.com
+    GAVEL_URL: https://judging.hacktx.com/
     GAVEL_ENV: freetail-gavel
   rules:
     - if: '$CI_COMMIT_BRANCH == "mainline" && $GAVEL_ENV == "freetail-gavel"'
@@ -73,7 +73,7 @@ prod_deploy:
     - rm .gitignore
     - rm gavel/static/.gitignore
     - mv $CI_ENV_FILE_PROD .env
-    - echo "BASE_URL=$GAVEL_URL" >> .env
+    - echo -e "\nBASE_URL=$GAVEL_URL" >> .env
     - git add .
     - git status
     - ls -al
@@ -88,7 +88,7 @@ prod_deploy:
   rules:
     - if: '$CI_COMMIT_BRANCH == "mainline" && $GAVEL_ENV != "freetail-gavel"'
   variables:
-    GAVEL_URL: $GAVEL_ENV.us-east-1.elasticbeanstalk.com
+    GAVEL_URL: https://$GAVEL_ENV.us-east-1.elasticbeanstalk.com/
 
 prod_deploy_custom:
   extends:
