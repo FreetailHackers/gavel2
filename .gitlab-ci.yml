@@ -45,6 +45,7 @@ prod_deploy:
     name: $GAVEL_ENV
     url: $GAVEL_URL
     action: start
+    on_stop: prod_stop
   retry: 1
   dependencies:
     - build_scss
@@ -93,11 +94,17 @@ prod_stop_custom:
 prod_create:
   stage: pre-production
   extends: prod_deploy
+  variables:
+    INSTANCE_TYPES: t2.small,t3.small
+    MAX_INSTANCES: 4
   script:
-    - eb create $GAVEL_ENV -d -c $GAVEL_ENV -r us-east-1 -it t2.micro,t3.micro --elb-type application -im 1 -ix 2 -db.engine postgres -db.i db.t3.micro -db.size 5 -db.user postgres -db.pass $DB_PASSWORD_PROD -db.version 14.2 || exit_code=$?
+    - eb create $GAVEL_ENV -d -c $GAVEL_ENV -r us-east-1 -i $INSTANCE_TYPES --elb-type application -im 1 -ix $MAX_INSTANCES -db.engine postgres -db.i db.t3.micro -db.size 5 -db.user postgres -db.pass $DB_PASSWORD_PROD -db.version 14.2 || exit_code=$?
     - if [ $exit_code -ne 0 ]; then echo "Create EB environment attempt failed"; fi;
 
 prod_create_custom:
   extends:
     - prod_create
     - .standardurl
+  variables:
+    INSTANCE_TYPES: t2.micro,t3.micro
+    MAX_INSTANCES: 2
