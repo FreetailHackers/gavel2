@@ -1,0 +1,33 @@
+{% block content %}
+  <div class="modal-wrapper" id="edit-project">
+    <div class="full-modal">
+      <div class="admin-modal-content edit-modal">
+        <div class="admin-close-button" onclick="openModal('close')"></div>
+        <div>
+          <iframe onload="autoResizeProject('itemframe')" height="400px" scrolling="yes" id="itemframe" sandbox="allow-top-navigation allow-scripts allow-forms allow-same-origin"></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    async function openProject(id) {
+      console.log(itemData.api.getRowNode(id).data)
+      const editProject = document.getElementById('itemframe');
+      editProject.src = `/admin/item/${id}/`;
+      openModal('edit-project');
+    }
+
+    async function autoResizeProject(id){
+      let newheight;
+      let newwidth;
+
+      if(document.getElementById){
+        newheight = await document.getElementById(id).contentWindow.document.getElementById("content").scrollHeight;
+        newwidth = await document.getElementById(id).contentWindow.document.getElementById("content").scrollWidth;
+      }
+
+      document.getElementById(id).height= `${(newheight % 2 === 0 ) ? newheight : newheight+1}px`;
+      document.getElementById(id).width= `${((newwidth < 400) ? 416 : newwidth % 2 === 0 ? newwidth : newwidth+1)}px` ;
+    }
+  </script>
+{% endblock %}

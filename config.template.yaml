@@ -52,10 +52,10 @@ broker_uri: null
 
 # can also be specified as the 'PORT' environment variable
 # defaults to '5000'
-port: null
+port: 8000
 
 # can also be specified as the 'MIN_VIEWS' environment variable
-# defaults to '2'
+# defaults to '4'
 #
 # this is the minimum number of times each item needs to be seen before
 # switching to more sophisticated item selection strategies.
@@ -109,14 +109,14 @@ wait_message: null
 # defaults to 'False'
 #
 # setting this to true disables email functionality.
-disable_email: null
+disable_email: False
 
 # can also be specified as the 'EMAIl_AUTH_MODE' environment variable
 # defaults to 'tls'
 #
 # can either be 'tls', 'ssl' or 'none'. if you are setting DISABLE_EMAIL, you can set
 # this setting to '_unused_' (or anything else).
-email_auth_mode: null
+email_auth_mode: 'tls'
 
 # can also be specified as the 'EMAIL_HOST' environment variable
 # defaults to 'smtp.gmail.com'
@@ -128,11 +128,11 @@ email_auth_mode: null
 #
 # see the troubleshooting guide for more help:
 # https://github.com/anishathalye/gavel/wiki/Troubleshooting
-email_host: null
+email_host: 'email-smtp.us-east-1.amazonaws.com'
 
 # can also be specified as the 'EMAIL_PORT' environment variable
 # defaults to '587'
-email_port: null
+email_port: 587
 
 # can also be specified as the 'EMAIL_CC' environment variable
 # defaults to '[]'
@@ -166,3 +166,35 @@ email_body: null
 # event to this list (https://github.com/anishathalye/gavel/wiki/Users), at the
 # very least.
 send_stats: null
+
+
+# can also be specified as the 'EMAIL_PROVIDER' environment variable
+# defaults to 'smtp'
+#
+# This setting determines the method used to send emails to judges. User currently
+# has the choice between smtp, sendgrid, and mailgun
+email_provider: 'smtp'
+
+# can also be specified as the 'SENDGRID_API_KEY' environment variable
+# defaults to null
+#
+# This setting must be populated if the email_provider is sendgrid
+sendgrid_api_key: null
+
+# can also be specified as the 'MAILGUN_DOMAIN' environment variable
+# defaults to null
+#
+# This setting must be populated if the email_provider is mailgun
+mailgun_domain: null
+
+# can also be specified as the 'MAILGUN_API_KEY' environment variable
+# defaults to null
+#
+# This setting must be populated if the email_provider is mailgun
+mailgun_api_key: null
+
+# can also be spefified as the 'VIRTUAL_EVENT' environment variable
+# defaults to False
+#
+# This setting should be set to True if the event in question is a virtual event
+virtual_event: False

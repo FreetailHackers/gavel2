@@ -1,31 +1,53 @@
-from gavel.models import db
+from gavel.models import db, ma
+from marshmallow_sqlalchemy import ModelSchema, TableSchema
 import gavel.utils as utils
 import gavel.crowd_bt as crowd_bt
 from sqlalchemy.orm.exc import NoResultFound
 from datetime import datetime
 
-ignore_table = db.Table('ignore',
-    db.Column('annotator_id', db.Integer, db.ForeignKey('annotator.id')),
-    db.Column('item_id', db.Integer, db.ForeignKey('item.id'))
+from gavel.models._basemodel import BaseModel
+
+ignore_table = db.Table(
+    "ignore",
+    db.Column("annotator_id", db.Integer, db.ForeignKey("annotator.id")),
+    db.Column("item_id", db.Integer, db.ForeignKey("item.id")),
 )
 
-class Annotator(db.Model):
+
+class Annotator(BaseModel):
     id = db.Column(db.Integer, primary_key=True, nullable=False)
     name = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(120), nullable=False)
     active = db.Column(db.Boolean, default=True, nullable=False)
+    stop_next = db.Column(db.Boolean, default=False, nullable=False)
     read_welcome = db.Column(db.Boolean, default=False, nullable=False)
     description = db.Column(db.Text, nullable=False)
     secret = db.Column(db.String(32), unique=True, nullable=False)
-    next_id = db.Column(db.Integer, db.ForeignKey('item.id'))
-    next = db.relationship('Item', foreign_keys=[next_id], uselist=False)
-    updated = db.Column(db.DateTime)
-    prev_id = db.Column(db.Integer, db.ForeignKey('item.id'))
-    prev = db.relationship('Item', foreign_keys=[prev_id], uselist=False)
-    ignore = db.relationship('Item', secondary=ignore_table)
+    next_id = db.Column(db.Integer, db.ForeignKey("item.id"))
+    next = db.relationship("Item", foreign_keys=[next_id], uselist=False)
+    updated = db.Column(db.DateTime, onupdate=datetime.utcnow)
+    prev_id = db.Column(db.Integer, db.ForeignKey("item.id"))
+    prev = db.relationship("Item", foreign_keys=[prev_id], uselist=False)
+    ignore = db.relationship("Item", secondary=ignore_table)
 
     alpha = db.Column(db.Float)
     beta = db.Column(db.Float)
+
+    _default_fields = [
+        "name",
+        "email",
+        "active",
+        "stop_next",
+        "read_welcome",
+        "description",
+        "next_id",
+        "prev_id",
+        "ignore",
+        "updated",
+    ]
+    _secret_fields = ["secret"]
+
+    relations_keys = ("next", "prev", "ignore")
 
     def __init__(self, name, email, description):
         self.name = name
@@ -37,7 +59,9 @@ class Annotator(db.Model):
 
     def update_next(self, new_next):
         if new_next is not None:
-            new_next.prioritized = False # it's now assigned, so cancel the prioritization
+            new_next.prioritized = (
+                False  # it's now assigned, so cancel the prioritization
+            )
             # it could happen that the judge skips the project, but that
             # doesn't re-prioritize the project
             self.updated = datetime.utcnow()

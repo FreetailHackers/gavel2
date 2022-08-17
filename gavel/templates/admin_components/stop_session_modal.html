@@ -1,0 +1,22 @@
+{% block component %}
+  <div class="modal-wrapper" id="stop-session">
+    <div class="full-modal">
+      <div class="admin-modal-content w-49.6 rounded">
+        <h3 class="text-20 text-center pb-1.6">Are you sure you want to <span class="text-red">stop</span><br>the judging session?</h3>
+        <p class="text-center text-14 pb-1.6">
+          If you choose to soft close, expo judges will be allowed to make a decision on the
+          team they are currently visiting. Final results as of closing are subject to change
+          based on these last entries.
+        </p>
+        <p class="text-center text-14 pb-1.6">
+          Optionally, ending the session now will preserve the rankings shown.
+        </p>
+        <div class="w-full flex justify-between">
+          <button class="text-12 w-14.4 h-3.2 white uppercase bg-lightgray rounded pr-.4" onclick="openModal('close')">CONTINUE JUDGING</button>
+          <button class="text-12 w-14.4 h-3.2 white uppercase bg-red rounded px-.4" onclick="handleSessionRequest('soft', 'queue')">SOFT CLOSE</button>
+          <button class="text-12 w-14.4 h-3.2 white uppercase bg-red rounded pl-.4" onclick="handleSessionRequest('hard', 'close')">END SESSION NOW</button>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,21 +1,34 @@
 {% extends "layout.html" %}
 {% block title %}Welcome{% endblock %}
 {% block content %}
-<div class="item">
-  <div class="banner">
-    <h1>Welcome</h1>
-  </div>
-  <div class="info">
-    {{ content }}
-  </div>
-</div>
+  <div class="container">
+    <div class="w-full">
+      <div class="text-32 text-indigo pb-2.4 md:pb-4 pt-8 md:pt-14.4">
+        <h1 class="page-title">Welcome to Gavel.</h1>
+      </div>
+      <div class="md:max-w-48">
+        <p class="text-16 pb-1.6 md:pb-2.4">
+          Gavel is a judging platform that makes expo judging easier. Judges are asked to compare each project they review 
+          against the previous project and make a simple decision on which of the two is better. By looking at your 
+          comparison patterns as well as those of the other judges, Gavel determines rankings for all of the participating projects.
+        </p>
 
-<div class="item">
-  <div class="info">
-    <form action="/welcome/done" method="post">
-      <input type="submit" name="action" value="Done" class="button-full button-gap positive">
-      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <p class="text-16 pb-1.6 md:pb-2.4">
+          Gavel does not take into consideration any specific judging criteria set by event staff or the possible weighting of such 
+          criteria in the evaluation of projects.
+        </p>
+
+        <p class="text-16 pb-1.6 md:pb-3.2">
+          Please consult your event’s judging coordinator or equivalent staff member if you are unclear on how to use Gavel or have 
+          any questions regarding judging criteria set by event staff.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <form action="/welcome/instructions" method="get" class="flex md:flex w-full md:w-16">
+      <button type="submit" class="button-full"> Continue </button>
     </form>
   </div>
-</div>
 {% endblock %}

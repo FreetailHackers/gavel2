@@ -2,3 +2,21 @@ config.yaml
 *.pyc
 env/
 .vagrant/
+.idea
+.vscode/
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/config.yml
+!.elasticbeanstalk/*.global.yml
+venv/
+
+.env*
+!.env.example
+
+.vscode/
+
+celerybeat-schedule
+
+node_modules/

@@ -1,0 +1,110 @@
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: "$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS"
+      when: never
+    - if: "$CI_COMMIT_BRANCH"
+
+stages:
+  - build
+  - staging
+  - test
+  - pre-production
+  - production
+
+build_scss:
+  stage: build
+  image: node
+  before_script:
+    - yarn install
+    - npx browserslist@latest --update-db
+  script: yarn build
+  artifacts:
+    name: "generated-scss"
+    paths:
+      - gavel/static/generated.scss
+    expire_in: 1 week
+
+build_python:
+  stage: build
+  image: python:3.7.10-slim
+  script:
+    - pip install -r requirements.txt
+    - black --check gavel
+    - pylint --exit-zero gavel # TODO disable exit-zero flag eventually
+
+prod_deploy:
+  stage: production
+  image: $EB_IMAGE
+  variables:
+    GAVEL_URL: https://judging.hacktx.com/
+    GAVEL_ENV: freetail-gavel
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "mainline" && $GAVEL_ENV == "freetail-gavel"'
+  environment:
+    name: $GAVEL_ENV
+    url: $GAVEL_URL
+    action: start
+    on_stop: prod_stop
+  retry: 1
+  dependencies:
+    - build_scss
+  before_script:
+    - mkdir ~/.aws/
+    - touch ~/.aws/credentials
+    - 'printf "[eb-cli]\naws_access_key_id = %s\naws_secret_access_key = %s\n" "$AWS_ACCESS_KEY_ID" "$AWS_SECRET_ACCESS_KEY" >> ~/.aws/credentials'
+    - mv config.template.yaml config.yaml
+    - rm .gitignore
+    - rm gavel/static/.gitignore
+    - mv $CI_ENV_FILE_PROD .env
+    - echo -e "\nBASE_URL=$GAVEL_URL" >> .env
+    - git add .
+    - git status
+    - ls -al
+  script:
+    - eb list
+    - eb use $GAVEL_ENV
+    - eb health
+    - eb status --verbose
+    - eb deploy --staged
+
+.standardurl:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "mainline" && $GAVEL_ENV != "freetail-gavel"'
+  variables:
+    GAVEL_URL: https://$GAVEL_ENV.us-east-1.elasticbeanstalk.com/
+
+prod_deploy_custom:
+  extends:
+    - prod_deploy
+    - .standardurl
+
+prod_stop:
+  extends: prod_deploy
+  when: manual
+  environment:
+    action: stop
+  script: eb terminate --force $GAVEL_ENV
+
+prod_stop_custom:
+  extends:
+    - prod_stop
+    - .standardurl
+
+prod_create:
+  stage: pre-production
+  extends: prod_deploy
+  variables:
+    INSTANCE_TYPES: t2.small,t3.small
+    MAX_INSTANCES: 4
+  script:
+    - eb create $GAVEL_ENV -d -c $GAVEL_ENV -r us-east-1 -i $INSTANCE_TYPES --elb-type application -im 1 -ix $MAX_INSTANCES -db.engine postgres -db.i db.t3.micro -db.size 5 -db.user postgres -db.pass $DB_PASSWORD_PROD -db.version 14.2 || exit_code=$?
+    - if [ $exit_code -ne 0 ]; then echo "Create EB environment attempt failed"; fi;
+
+prod_create_custom:
+  extends:
+    - prod_create
+    - .standardurl
+  variables:
+    INSTANCE_TYPES: t2.micro,t3.micro
+    MAX_INSTANCES: 2

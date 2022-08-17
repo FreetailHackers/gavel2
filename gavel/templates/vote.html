@@ -1,42 +1,67 @@
 {% extends "layout.html" %}
 {% block title %}Vote{% endblock %}
 {% block content %}
-<div class="item">
-  <div class="banner-tight" id="previous-header">
-    <h1>Previous</h1>
+  <style type="text/css">
+    table {
+      border: 0;
+    }
+    tr {
+      border: 0;
+    }
+    td {
+      border: 0;
+    }
+  </style>
+<div class="pb-8">
+  <div class="container">
+    <div class="w-full flex justify-between items-center">
+      <div>
+        <h2 class="text-indigo text-18 md:text-24 pb-.8 pt-1.6">Review the new Current Project.</h2>
+        <p class="text-gray text-12 md:text-14 pb-1.6">Click ‘{{ finished_button_text }}’ to select the better of the two projects.</p>
+      </div>
+      <div class="hidden md:flex items-center">
+        <button class="bg-red bg-flag h-4 w-4.8 rounded m-.6" title="Report" type="button" id="reportbutton" onclick="toggleReport()"></button>
+        {% if not virtual %}
+        <button class="bg-purple bg-chevron h-4 w-4.8 rounded m-.6" title="Skip" type="button" id="skipButton" onclick="toggleSkip()"></button>
+        {% endif %}
+        <button class="bg-lightblue h-4 w-14.4 rounded flex-grow m-.6 text-white" title="Done" type="button" id="doneButton" onclick="toggleModal()">{{ finished_button_text }}</button>
+      </div>
+    </div>
+    <div class="flex justify-between flex-shrink-0 xl:flex-row flex-col pb-1.6 xl:-mx-2">
+      <div class="flex-grow xl:max-w-1/2 xl:pb-3.4 pb-2.4 xl:mx-2">
+        <p class="uppercase text-indigo font-medium text-12 md:text-16 mb-1.2 border-b border-indigo">CURRENT PROJECT</p>
+        {% with item=next %}
+          {% include "_item.html" %}
+        {% endwith %}
+      </div>
+      <div class="flex-grow xl:max-w-1/2 xl:mx-2">
+        <p class="uppercase text-gray font-medium text-12 md:text-16 mb-1.2 border-b border-gray">LAST PROJECT YOU REVIEWED</p>
+        {% with item=prev %}
+          {% include "_item.html" %}
+        {% endwith %}
+      </div>
+    </div>
   </div>
-  <div id="previous-body">
-    {% with item=prev %}
-    {% include "_item.html" %}
-    {% endwith %}
+
+  <div class="fixed md:hidden bottomPanel flex w-full flex-row inline-flex justify-between">
+    <button class="bg-red bg-flag h-4.8 w-6 rounded m-.6" title="Report" type="button" id="reportbutton" onclick="toggleReport()"></button>
+    {% if not virtual %}
+    <button class="skipButton m-.6" type="button" title="Skip" id="skipButton" onclick="toggleSkip()"></button>
+    {% endif %}
+    <button class="doneButton doneButtonText flex-grow m-.6" type="button" title="Done" id="doneButton" onclick="toggleModal()">{{ finished_button_text }}</button>
   </div>
+
+  {% with prev=prev, next=next %}
+    {% include './vote_components/report_modal.html' %}
+  {% endwith %}
+
+  {% with prev=prev, next=next, action="/vote" %}
+    {% include "./vote_components/skip_modal.html" %}
+  {% endwith %}
+
+  {% with prev=prev, next=next %}
+    {% include "./vote_components/vote_modal.html" %}
+  {% endwith %}
 </div>
 
-<div class="item">
-  <div class="banner-tight" id="current-header">
-    <h1>Current</h1>
-  </div>
-  <div id="current-body">
-    {% with item=next %}
-    {% include "_item.html" %}
-    {% endwith %}
-  </div>
-</div>
-
-<div class="item">
-  <div class="banner" id="vote-header">
-    <h1>Vote</h1>
-  </div>
-  <div class="info">
-    <form action="/vote" method="post">
-      <p class="center">Which one is better?</p>
-      <input type="submit" name="action" value="Previous" id="vote-previous" class="button-left">
-      <input type="submit" name="action" value="Current" id="vote-current" class="button-right">
-      <input type="submit" name="action" value="Skip" id="vote-skip" class="button-full button-gap">
-      <input type="hidden" name="prev_id" value="{{ prev.id }}">
-      <input type="hidden" name="next_id" value="{{ next.id }}">
-      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-    </form>
-  </div>
-</div>
 {% endblock %}
