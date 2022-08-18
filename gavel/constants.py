@@ -1,5 +1,5 @@
 ANNOTATOR_ID = "annotator_id"
-TELEMETRY_URL = "https://telemetry.anish.io/api/v1/submit"
+TELEMETRY_URL = ""
 
 # Socket events
 CONNECT = "connected"
