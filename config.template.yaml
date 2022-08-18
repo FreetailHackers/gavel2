@@ -165,7 +165,7 @@ email_body: null
 # leave this enabled. if you absolutely need to disable this, please add your
 # event to this list (https://github.com/anishathalye/gavel/wiki/Users), at the
 # very least.
-send_stats: null
+send_stats: false
 
 
 # can also be specified as the 'EMAIL_PROVIDER' environment variable
