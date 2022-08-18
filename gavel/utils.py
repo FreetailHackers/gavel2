@@ -149,6 +149,9 @@ def send_smtp_emails(emails):
     elif settings.EMAIL_AUTH_MODE == "ssl":
         print("Why are we on SSL?")
         server = smtplib.SMTP_SSL(settings.EMAIL_HOST, settings.EMAIL_PORT)
+    elif settings.EMAIL_AUTH_MODE == "none":
+        server = smtplib.SMTP(settings.EMAIL_HOST, settings.EMAIL_PORT)
+        server.ehlo()
     else:
         raise ValueError("unsupported auth mode: %s" % settings.EMAIL_AUTH_MODE)
 
