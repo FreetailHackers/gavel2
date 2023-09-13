@@ -101,7 +101,7 @@ prod_create:
     INSTANCE_TYPES: t2.small,t3.small
     MAX_INSTANCES: 6
   script:
-    - eb create $GAVEL_ENV --timeout $EB_CLI_TIMEOUT -d -c $GAVEL_ENV -r us-east-1 -i $INSTANCE_TYPES --elb-type application -im 1 -ix $MAX_INSTANCES -db.engine postgres -db.i db.t3.small -db.size 5 -db.user postgres -db.pass $DB_PASSWORD_PROD -db.version 14.2 || exit_code=$?
+    - eb create $GAVEL_ENV --timeout $EB_CLI_TIMEOUT -d -c $GAVEL_ENV -r us-east-1 -i $INSTANCE_TYPES --elb-type application -im 1 -ix $MAX_INSTANCES -db.engine postgres -db.i db.t3.small -db.size 5 -db.user postgres -db.pass $DB_PASSWORD_PROD -db.version 15.4 || exit_code=$?
     - if [ $exit_code -ne 0 ]; then echo "Create EB environment attempt failed"; fi;
 
 prod_create_custom:
